@@ -1,14 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useBrands } from "@/hooks/useData";
 
 const BrandsSection = () => {
   const { data: brands = [], isLoading } = useBrands();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [isPaused, setIsPaused] = useState(false);
+  const [isTouching, setIsTouching] = useState(false);
   const animationRef = useRef<number>();
   const scrollPositionRef = useRef(0);
   const lastTimeRef = useRef(0);
+  const touchTimeoutRef = useRef<NodeJS.Timeout>();
 
   // Auto-scroll functionality with smooth continuation
   useEffect(() => {
@@ -18,7 +21,7 @@ const BrandsSection = () => {
     const scrollSpeed = 0.5; // pixels per frame
 
     const animate = (currentTime: number) => {
-      if (!isPaused && scrollRef.current) {
+      if (!isPaused && !isTouching && scrollRef.current) {
         const deltaTime = currentTime - lastTimeRef.current;
         
         // Only update if enough time has passed (for consistent speed)
@@ -55,9 +58,9 @@ const BrandsSection = () => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [brands, isPaused]);
+  }, [brands, isPaused, isTouching]);
 
-  // Handle pause/resume without breaking animation
+  // Handle pause/resume without breaking animation (Desktop)
   const handleMouseEnter = () => {
     // Save current position before pausing
     if (scrollRef.current) {
@@ -70,6 +73,39 @@ const BrandsSection = () => {
     // Resume from current position
     setIsPaused(false);
   };
+
+  // Handle touch events for mobile
+  const handleTouchStart = () => {
+    setIsTouching(true);
+    // Clear any existing timeout
+    if (touchTimeoutRef.current) {
+      clearTimeout(touchTimeoutRef.current);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // Resume auto-scroll after a short delay when touch ends
+    touchTimeoutRef.current = setTimeout(() => {
+      setIsTouching(false);
+    }, 2000); // Resume after 2 seconds of no touch
+  };
+
+  // Handle scroll events (for manual scrolling)
+  const handleScroll = () => {
+    if (scrollRef.current && (isTouching || isPaused)) {
+      // Update our position reference when manually scrolling
+      scrollPositionRef.current = scrollRef.current.scrollLeft;
+    }
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (touchTimeoutRef.current) {
+        clearTimeout(touchTimeoutRef.current);
+      }
+    };
+  }, []);
 
   if (isLoading) {
     return (
@@ -129,6 +165,9 @@ const BrandsSection = () => {
               className="flex gap-8 overflow-x-hidden py-8 scroll-smooth"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
+              onTouchStart={handleTouchStart}
+              onTouchEnd={handleTouchEnd}
+              onScroll={handleScroll}
               style={{
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
@@ -138,16 +177,41 @@ const BrandsSection = () => {
               {duplicatedBrands.map((brand, index) => (
                 <div 
                   key={`${brand.id}-${index}`}
-                  className="flex-shrink-0 group cursor-pointer"
+                  className="flex-shrink-0 group"
                 >
-                  <div className="w-40 h-24 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 flex items-center justify-center p-4 group-hover:scale-105 border border-gray-100">
-                    {brand.logo ? (
-                      <img 
-                        src={brand.logo}  // Changed from brand.image to brand.logo
-                        alt={brand.name}
-                        className="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
-                      />
-                    ) : (
+                  {brand.logo ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <div className="w-40 h-24 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 flex items-center justify-center p-4 group-hover:scale-105 border border-gray-100 cursor-pointer">
+                          <img 
+                            src={brand.logo}
+                            alt={brand.name}
+                            className="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all duration-300"
+                          />
+                        </div>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-4xl w-full p-0 bg-transparent border-none">
+                        <div className="relative bg-white rounded-lg overflow-hidden">
+                          <img 
+                            src={brand.logo}
+                            alt={brand.name}
+                            className="w-full h-auto max-h-[80vh] object-contain"
+                          />
+                          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                            <h3 className="text-2xl font-bold text-white mb-2">
+                              {brand.name}
+                            </h3>
+                            {brand.description && (
+                              <p className="text-white/90 text-lg">
+                                {brand.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <div className="w-40 h-24 bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 flex items-center justify-center p-4 group-hover:scale-105 border border-gray-100">
                       <div className="text-center">
                         <div className="w-12 h-12 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-lg flex items-center justify-center mx-auto mb-2">
                           <span className="text-lg font-bold text-primary">
@@ -158,10 +222,10 @@ const BrandsSection = () => {
                           {brand.name}
                         </span>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                   
-                  {/* Brand name below - visible on hover */}
+                  {/* Brand name below - visible on hover/touch */}
                   <div className="mt-3 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <h3 className="text-sm font-semibold text-primary">
                       {brand.name}
@@ -180,12 +244,13 @@ const BrandsSection = () => {
             <div className="flex justify-center mt-8 gap-4">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                  isPaused ? 'bg-yellow-500' : 'bg-primary animate-pulse'
+                  isPaused || isTouching ? 'bg-yellow-500' : 'bg-primary animate-pulse'
                 }`}></div>
-                <span>{isPaused ? 'Paused' : 'Auto-scrolling'}</span>
+                <span>{isPaused || isTouching ? 'Paused' : 'Auto-scrolling'}</span>
               </div>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span>Hover to pause</span>
+                <span className="hidden md:inline">Hover to pause • Click to view</span>
+                <span className="md:hidden">Touch to pause • Tap to view</span>
               </div>
             </div>
           </div>
