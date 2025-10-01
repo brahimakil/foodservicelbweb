@@ -11,6 +11,8 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Catalog from "./pages/Catalog";
 import NotFound from "./pages/NotFound";
+import Brands from "./pages/Brands";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 // Optimized QueryClient configuration for better user experience
 const queryClient = new QueryClient({
@@ -45,6 +47,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/products" element={<Products />} />
+            <Route path="/brands" element={<Brands />} />
             <Route path="/about" element={<About />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/catalog" element={<Catalog />} />
@@ -52,6 +55,7 @@ const App = () => (
           </Routes>
           {/* AI Assistant - Available on all pages */}
           <AIAssistant />
+          <WhatsAppButton />
         </BrowserRouter>
       </TooltipProvider>
     </QueryClientProvider>

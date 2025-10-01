@@ -63,6 +63,14 @@ const Header = () => {
                 Products
               </Link>
               <Link
+                to="/brands"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  isActive("/brands") ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Brands
+              </Link>
+              <Link
                 to="/about"
                 className={`text-sm font-medium transition-colors hover:text-primary ${
                   isActive("/about") ? "text-primary" : "text-muted-foreground"
@@ -120,6 +128,15 @@ const Header = () => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 Products
+              </Link>
+              <Link
+                to="/brands"
+                className={`block py-2 px-4 hover:bg-accent ${
+                  isActive("/brands") ? "bg-accent text-primary font-medium" : ""
+                }`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Brands
               </Link>
               <Link
                 to="/about"

@@ -11,10 +11,12 @@ import {
   Grid3X3,
   List,
   SortAsc,
-  SortDesc
+  SortDesc,
+  MessageCircle
 } from "lucide-react";
 import { useProducts, useCategories } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import BlurImage from "./BlurImage";
 
 const ProductGrid = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL PRODUCTS");
@@ -227,18 +229,22 @@ const ProductGrid = () => {
                   {product.image ? (
                     <Dialog>
                       <DialogTrigger asChild>
-                        <img 
-                          src={product.image} 
-                          alt={product.title}
-                          className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
-                        />
+                        <div className="w-full h-full cursor-pointer">
+                          <BlurImage
+                            src={product.image}
+                            alt={product.title}
+                            className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                            width={400}
+                            height={400}
+                          />
+                        </div>
                       </DialogTrigger>
-                      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden">
-                        <div className="relative">
-                          <img 
+                      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden flex items-center justify-center">
+                        <div className="relative w-full h-full flex items-center justify-center bg-black/5 p-8">
+                          <BlurImage
                             src={product.image} 
                             alt={product.title}
-                            className="w-full h-auto max-h-[85vh] object-contain"
+                            className="w-auto h-auto max-w-full max-h-[80vh] object-contain mx-auto"
                           />
                         </div>
                       </DialogContent>
@@ -265,11 +271,20 @@ const ProductGrid = () => {
                     </p>
                   )}
 
-                  {product.price && (
-                    <div className="text-lg font-bold text-primary">
-                      ${product.price}
-                    </div>
-                  )}
+                  {/* WhatsApp Contact Button */}
+                  <Button
+                    className="w-full bg-green-500 hover:bg-green-600 text-white mt-3"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const message = `Hi, I'm interested in *${product.title}*${product.description ? `\n\nDescription: ${product.description}` : ''}`;
+                      const whatsappUrl = `https://wa.me/96181404550?text=${encodeURIComponent(message)}`;
+                      window.open(whatsappUrl, '_blank');
+                    }}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Contact on WhatsApp
+                  </Button>
                 </div>
               </div>
             ))}
@@ -285,18 +300,20 @@ const ProductGrid = () => {
                     {product.image ? (
                       <Dialog>
                         <DialogTrigger asChild>
-                          <img 
-                            src={product.image} 
+                          <BlurImage
+                            src={product.image}
                             alt={product.title}
                             className="w-full h-full object-contain hover:scale-105 transition-transform duration-300 cursor-pointer"
+                            width={400}
+                            height={400}
                           />
                         </DialogTrigger>
-                        <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden">
-                          <div className="relative">
-                            <img 
+                        <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden flex items-center justify-center">
+                          <div className="relative w-full h-full flex items-center justify-center bg-black/5 p-8">
+                            <BlurImage
                               src={product.image} 
                               alt={product.title}
-                              className="w-full h-auto max-h-[85vh] object-contain"
+                              className="w-auto h-auto max-w-full max-h-[80vh] object-contain mx-auto"
                             />
                           </div>
                         </DialogContent>
@@ -308,36 +325,42 @@ const ProductGrid = () => {
                     )}
                   </div>
 
-                  {/* Product Info */}
+                  {/* Product Info - List View */}
                   <div className="flex-1 p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">{product.title}</h3>
-                          <div className="flex gap-2">
-                            <Badge className="bg-primary/90 text-white text-xs font-medium px-2 py-1">
-                              {getCategoryName(product.category)}
-                            </Badge>
-                            {product.isBestSeller && (
-                              <Badge className="bg-red-500 text-white text-xs font-medium px-2 py-1">
-                                BEST SELLER
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        {product.description && (
-                          <p className="text-gray-600 mb-2">{product.description}</p>
-                        )}
-                      </div>
-                      
-                      <div className="text-right ml-4">
-                        {product.price && (
-                          <div className="text-xl font-bold text-primary">
-                            ${product.price}
-                          </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-gray-900">{product.title}</h3>
+                      <div className="flex gap-2">
+                        <Badge className="bg-primary/90 text-white text-xs font-medium px-2 py-1">
+                          {getCategoryName(product.category)}
+                        </Badge>
+                        {product.isBestSeller && (
+                          <Badge className="bg-red-500 text-white text-xs font-medium px-2 py-1">
+                            BEST SELLER
+                          </Badge>
                         )}
                       </div>
                     </div>
+                    
+                    {product.description && (
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-3">
+                        {product.description}
+                      </p>
+                    )}
+
+                    {/* WhatsApp Contact Button - List View */}
+                    <Button
+                      className="bg-green-500 hover:bg-green-600 text-white mt-3"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const message = `Hi, I'm interested in *${product.title}*${product.description ? `\n\nDescription: ${product.description}` : ''}`;
+                        const whatsappUrl = `https://wa.me/96181404550?text=${encodeURIComponent(message)}`;
+                        window.open(whatsappUrl, '_blank');
+                      }}
+                    >
+                      <MessageCircle className="w-4 h-4 mr-2" />
+                      Contact on WhatsApp
+                    </Button>
                   </div>
                 </div>
               </div>

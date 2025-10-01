@@ -220,11 +220,7 @@ const Catalog = () => {
                               </p>
                             )}
                             <div className="flex flex-col md:flex-row items-center md:justify-between gap-3">
-                              {product.price && (
-                                <span className="font-bold text-2xl text-primary">
-                                  ${product.price}
-                                </span>
-                              )}
+                            
                               {product.isBestSeller && (
                                 <Badge className="bg-yellow-500 hover:bg-yellow-600 text-white">
                                   ⭐ BEST SELLER

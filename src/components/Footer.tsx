@@ -43,33 +43,15 @@ const Footer = () => {
     <footer className="bg-accent text-accent-foreground">
       <div className="container mx-auto px-4 py-8 lg:py-12">
         {/* Dynamic Footer Banners */}
-        {footerBanners.length > 0 && (
+        {footerBanners.length > 0 && footerBanners[0].images && footerBanners[0].images.length > 0 && (
           <div className="mb-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {footerBanners.slice(0, 3).map((banner) => (
-              <div key={banner.id} className="text-center p-4 bg-accent-foreground/5 rounded-lg">
-                {banner.image && (
-                  <img 
-                    src={banner.image} 
-                    alt={banner.title}
-                    className="w-16 h-16 mx-auto mb-3 rounded-full object-cover"
-                  />
-                )}
-                <h4 className="font-semibold text-sm mb-2">{banner.title}</h4>
-                {banner.description && (
-                  <p className="text-xs text-accent-foreground/80 line-clamp-2">
-                    {banner.description}
-                  </p>
-                )}
-                {banner.link && (
-                  <a 
-                    href={banner.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:text-primary/80 text-xs font-medium inline-block mt-2"
-                  >
-                    Learn More →
-                  </a>
-                )}
+            {footerBanners[0].images.slice(0, 3).map((image, index) => (
+              <div key={index} className="rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                <img 
+                  src={image} 
+                  alt={`${footerBanners[0].title} ${index + 1}`}
+                  className="w-full h-48 object-cover"
+                />
               </div>
             ))}
           </div>

@@ -14,7 +14,8 @@ import {
   X,
   Paperclip,
   Minimize2,
-  Maximize2
+  Maximize2,
+  MessageCircle
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useProducts, useCategories, useBrands } from "@/hooks/useData";
@@ -24,6 +25,7 @@ interface AIResponse {
   type: 'product' | 'category' | 'brand' | 'unknown' | 'general';
   found: boolean;
   matchedItem?: any;
+  matchedProducts?: any[]; // NEW: Array of matched products
   confidence?: number;
   reasoning?: string;
   response?: string;
@@ -178,11 +180,14 @@ Respond in JSON format:
 {
   "type": "product|category|brand|general",
   "found": true/false,
-  "matchedItem": "exact matches or conceptual alternatives",
+  "matchedProducts": [array of full product objects if products found],
+  "matchedItem": "text description if not products",
   "confidence": 0-100,
   "reasoning": "explain your search process and conceptual matching",
   "response": "helpful response explaining what you found or suggesting alternatives"
 }
+
+IMPORTANT: If you find products, include the FULL product objects in matchedProducts array with all their fields (title, description, price, image, etc.)
 `;
 
       const parts: any[] = [{ text: systemContext }];
@@ -408,7 +413,7 @@ Respond in JSON format:
                   </div>
                 </div>
 
-                {/* AI Response - Make it bigger */}
+                {/* AI Response - Updated with product cards */}
                 {aiResponse && (
                   <div className="space-y-3">
                     <div className="border rounded-lg p-4 bg-gradient-to-br from-blue-50/50 to-purple-50/50">
@@ -432,7 +437,74 @@ Respond in JSON format:
                         </div>
                       )}
 
-                      {(aiResponse.matchedItem || aiResponse.confidence) && (
+                      {/* Product Cards with WhatsApp Buttons */}
+                      {aiResponse.matchedProducts && aiResponse.matchedProducts.length > 0 && (
+                        <div className="space-y-2 mt-4">
+                          <p className="text-sm font-medium text-muted-foreground mb-2">
+                            {aiResponse.matchedProducts.length} Product{aiResponse.matchedProducts.length > 1 ? 's' : ''} Found:
+                          </p>
+                          {aiResponse.matchedProducts.map((product: any, index: number) => (
+                            <div key={index} className="bg-white rounded-lg p-3 border shadow-sm">
+                              <div className="flex gap-3">
+                                {product.image && (
+                                  <img 
+                                    src={product.image} 
+                                    alt={product.title}
+                                    className="w-16 h-16 object-cover rounded"
+                                  />
+                                )}
+                                <div className="flex-1 min-w-0">
+                                  <h4 className="font-semibold text-sm truncate">{product.title}</h4>
+                                  {product.description && (
+                                    <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                                      {product.description}
+                                    </p>
+                                  )}
+                                  {product.price && (
+                                    <p className="text-sm font-medium text-primary mt-1">
+                                      ${product.price}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* WhatsApp Button for Individual Product */}
+                              <Button
+                                className="w-full bg-green-500 hover:bg-green-600 text-white mt-3"
+                                size="sm"
+                                onClick={() => {
+                                  const message = `Hi, I'm interested in *${product.title}*${product.description ? `\n\nDescription: ${product.description}` : ''}${product.price ? `\nPrice: $${product.price}` : ''}`;
+                                  const whatsappUrl = `https://wa.me/96181404550?text=${encodeURIComponent(message)}`;
+                                  window.open(whatsappUrl, '_blank');
+                                }}
+                              >
+                                <MessageCircle className="w-4 h-4 mr-2" />
+                                Contact on WhatsApp
+                              </Button>
+                            </div>
+                          ))}
+                          
+                          {/* "Inquire All" Button if multiple products */}
+                          {aiResponse.matchedProducts.length > 1 && (
+                            <Button
+                              className="w-full bg-green-600 hover:bg-green-700 text-white mt-3"
+                              onClick={() => {
+                                const productList = aiResponse.matchedProducts!
+                                  .map((p, i) => `${i + 1}. ${p.title}${p.price ? ` ($${p.price})` : ''}`)
+                                  .join('\n');
+                                const message = `Hi, I'm interested in the following products:\n\n${productList}\n\nPlease provide more information.`;
+                                const whatsappUrl = `https://wa.me/96181404550?text=${encodeURIComponent(message)}`;
+                                window.open(whatsappUrl, '_blank');
+                              }}
+                            >
+                              <MessageCircle className="w-4 h-4 mr-2" />
+                              Inquire About All Products
+                            </Button>
+                          )}
+                        </div>
+                      )}
+
+                      {(aiResponse.matchedItem || aiResponse.confidence) && !aiResponse.matchedProducts && (
                         <div className="grid grid-cols-1 gap-3 text-sm">
                           {aiResponse.matchedItem && (
                             <div>

@@ -3,10 +3,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Eye, TrendingUp, Award } from "lucide-react";
+import { Eye, TrendingUp, Award, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useBestSellers, useBannersByType } from "@/hooks/useData";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import BlurImage from "./BlurImage";
 
 const BestSellers = () => {
   const { data: bestSellers = [], isLoading: bestSellersLoading } = useBestSellers();
@@ -118,18 +119,22 @@ const BestSellers = () => {
                   {product.image ? (
                     <Dialog>
                       <DialogTrigger asChild>
-                        <img 
-                          src={product.image} 
-                          alt={product.title}
-                          className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
-                        />
+                        <div className="w-full h-full cursor-pointer">
+                          <BlurImage
+                            src={product.image}
+                            alt={product.title}
+                            className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
+                            width={400}
+                            height={400}
+                          />
+                        </div>
                       </DialogTrigger>
-                      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden">
-                        <div className="relative">
-                          <img 
+                      <DialogContent className="max-w-4xl w-full max-h-[90vh] p-0 overflow-hidden flex items-center justify-center">
+                        <div className="relative w-full h-full flex items-center justify-center bg-black/5 p-8">
+                          <BlurImage
                             src={product.image} 
                             alt={product.title}
-                            className="w-full h-auto max-h-[85vh] object-contain"
+                            className="w-auto h-auto max-w-full max-h-[80vh] object-contain mx-auto"
                           />
                         </div>
                       </DialogContent>
@@ -156,11 +161,20 @@ const BestSellers = () => {
                     </p>
                   )}
 
-                  {product.price && (
-                    <div className="text-lg font-bold text-primary">
-                      ${product.price}
-                    </div>
-                  )}
+                  {/* WhatsApp Contact Button */}
+                  <Button
+                    className="w-full bg-green-500 hover:bg-green-600 text-white mt-3"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const message = `Hi, I'm interested in *${product.title}*${product.description ? `\n\nDescription: ${product.description}` : ''}`;
+                      const whatsappUrl = `https://wa.me/96181404550?text=${encodeURIComponent(message)}`;
+                      window.open(whatsappUrl, '_blank');
+                    }}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2" />
+                    Contact on WhatsApp
+                  </Button>
                 </div>
               </div>
             ))}
